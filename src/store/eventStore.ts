@@ -1,25 +1,25 @@
+// src/store/useEventoStore.ts
 import { create } from "zustand";
+import { fetchEventos } from "../services/event";
 
 type Event = {
   key: string;
-  title: string;
-  address: string;
+  eventName: string;
+  category: string;
   local: string;
-  gates: string;
-  type: string;
-  date: string;
 };
 
 type EventoState = {
-  editEvento: Event | null;
-  setEditEvento: (evento: Event) => void;
-  clearEditEvento: () => void;
+  eventos: Event[];
+  fetchEventos: () => void;
 };
 
 const useEventoStore = create<EventoState>((set) => ({
-  editEvento: null,
-  setEditEvento: (evento) => set({ editEvento: evento }),
-  clearEditEvento: () => set({ editEvento: null }),
+  eventos: [],
+  fetchEventos: async () => {
+    const eventos = await fetchEventos();
+    set({ eventos });
+  },
 }));
 
 export default useEventoStore;

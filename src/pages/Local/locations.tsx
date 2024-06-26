@@ -11,10 +11,10 @@ const { Content } = Layout;
 type Local = {
   key: string;
   title: string;
-  address: string;
-  cep: string;
-  gates: string;
-  update: string;
+  // address: string;
+  // cep: string;
+  // gates: string;
+  // update: string;
 };
 
 const Locations = () => {
@@ -29,60 +29,60 @@ const Locations = () => {
       dataIndex: "title",
       key: "title",
     },
-    {
-      title: "Endereço",
-      dataIndex: "address",
-      key: "address",
-    },
-    {
-      title: "Cidade e Estado",
-      dataIndex: "cep",
-      key: "cep",
-    },
-    {
-      title: "Portões Cadastrados",
-      dataIndex: "gates",
-      key: "gates",
-    },
-    {
-      title: "Atualização",
-      dataIndex: "update",
-      key: "update",
-    },
+    // {
+    //   title: "Endereço",
+    //   dataIndex: "address",
+    //   key: "address",
+    // },
+    // {
+    //   title: "Cidade e Estado",
+    //   dataIndex: "cep",
+    //   key: "cep",
+    // },
+    // {
+    //   title: "Portões Cadastrados",
+    //   dataIndex: "gates",
+    //   key: "gates",
+    // },
+    // {
+    //   title: "Atualização",
+    //   dataIndex: "update",
+    //   key: "update",
+    // },
   ];
   const locaisData: Local[] = [
     {
       key: "1",
       title: "Morumbi",
-      address: "Avenida Francisco Morato, 1000",
-      cep: "São Paulo, SP",
-      gates: "C.D.E.F.G.H.I.J.K",
-      update: "05/10/2023",
+      // address: "Avenida Francisco Morato, 1000",
+      // cep: "São Paulo, SP",
+      // gates: "C.D.E.F.G.H.I.J.K",
+      // update: "05/10/2023",
     },
-    {
-      key: "2",
-      title: "Allianz Parque",
-      address: "Avenida Francisco Matarazzo, 1705",
-      cep: "São Paulo, SP",
-      gates: "C.D.E.F.G.H.I.J.K",
-      update: "05/10/2023",
-    },
-    {
-      key: "3",
-      title: "Neo Química Arena",
-      address: "Avenida Miguel Inácio Curi, 111",
-      cep: "São Paulo, SP",
-      gates: "C.D.E.F.G.H.I.J.K",
-      update: "05/10/2023",
-    },
-    {
-      key: "4",
-      title: "Neo Química Arena",
-      address: "Avenida Miguel Inácio Curi, 111",
-      cep: "São Paulo, SP",
-      gates: "C.D.E.F.G.H.I.J.K",
-      update: "05/10/2023",
-    },
+    // {
+    //   key: "2",
+    //   title: "Allianz Parque",
+    //   address: "Avenida Francisco Matarazzo, 1705",
+    //   cep: "São Paulo, SP",
+    //   gates: "C.D.E.F.G.H.I.J.K",
+    //   update: "05/10/2023",
+    // },
+    // {
+    //   key: "3",
+    //   title: "Neo Química Arena",
+    //   address: "Avenida Miguel Inácio Curi, 111",
+    //   cep: "São Paulo, SP",
+    //   gates: "C.D.E.F.G.H.I.J.K",
+    //   update: "05/10/2023",
+    // },
+    // {
+    //   key: "4",
+    //   title: "Neo Química Arena",
+    //   address: "Avenida Miguel Inácio Curi, 111",
+    //   cep: "São Paulo, SP",
+    //   gates: "C.D.E.F.G.H.I.J.K",
+    //   update: "05/10/2023",
+    // },
   ];
 
   // Configurações de paginação

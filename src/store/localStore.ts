@@ -1,24 +1,25 @@
+// src/store/localStore.ts
 import { create } from "zustand";
+import { fetchLocais } from "../services/local";
 
 type Local = {
   key: string;
-  title: string;
+  localName: string;
   address: string;
-  cep: string;
   gates: string;
-  update: string;
 };
 
 type LocalState = {
-  editLocal: Local | null;
-  setEditLocal: (local: Local) => void;
-  clearEditLocal: () => void;
+  locais: Local[];
+  fetchLocais: () => void;
 };
 
 const useLocalStore = create<LocalState>((set) => ({
-  editLocal: null,
-  setEditLocal: (local) => set({ editLocal: local }),
-  clearEditLocal: () => set({ editLocal: null }),
+  locais: [],
+  fetchLocais: async () => {
+    const locais = await fetchLocais();
+    set({ locais });
+  },
 }));
 
 export default useLocalStore;

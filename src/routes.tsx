@@ -11,4 +11,5 @@ export const router = createBrowserRouter([
   { path: "/locations", element: <Locations /> },
   { path: "/newLocal", element: <NewLocal /> },
   { path: "/newEvent", element: <NewEvent /> },
+  { path: "/edit/:id", element: <NewLocal /> },
 ]);
