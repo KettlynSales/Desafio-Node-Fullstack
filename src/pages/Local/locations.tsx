@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { SearchOutlined } from "@ant-design/icons";
 
-import AppHeader from "../components/header";
+import AppHeader from "../../components/header";
 
 const { Content } = Layout;
 

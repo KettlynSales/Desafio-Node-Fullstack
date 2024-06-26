@@ -1,8 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import Home from "./pages/Home/home";
 import Events from "./pages/Event/events";
-import Locations from "./pages/locations";
-import NewLocal from "./pages/Forms/NewLocal/newLocal";
+import Locations from "./pages/Local/locations";
+import NewLocal from "./pages/Local/NewLocal";
 import NewEvent from "./pages/Event/NewEvent";
 
 export const router = createBrowserRouter([

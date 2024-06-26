@@ -1,10 +1,18 @@
-import { Layout, Card, Button, Table, Tag, Row, Col } from "antd";
-
+import {
+  Layout,
+  Card,
+  Button,
+  Table,
+  Tag,
+  Row,
+  Col,
+  Menu,
+  Dropdown,
+} from "antd";
+import { MoreOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-
 import AppHeader from "../../components/header";
 import Doll from "../../assets/boneco.png";
-
 import BackgroundImage from "../../assets/background.png";
 
 const { Content } = Layout;
@@ -26,21 +34,47 @@ type Evento = {
 const Home = () => {
   const navigate = useNavigate();
 
+  const handleMenuClick = (e: any, record: Local) => {
+    if (e.key === "edit") {
+      // Navegar para a página de edição com os detalhes do registro
+      navigate(`/edit/${record.key}`);
+    } else if (e.key === "delete") {
+      // Lógica para apagar o registro
+      console.log("Apagar registro:", record.key);
+    }
+  };
+
+  const menu = (record: Local) => (
+    <Menu onClick={(e) => handleMenuClick(e, record)}>
+      <Menu.Item key="edit">Editar</Menu.Item>
+      <Menu.Item key="delete">Apagar</Menu.Item>
+    </Menu>
+  );
+
   const locaisColumns = [
     {
-      title: "Nome",
       dataIndex: "title",
       key: "title",
     },
     {
-      title: "Endereço",
       dataIndex: "address",
       key: "address",
     },
     {
-      title: "Detalhes",
       dataIndex: "details",
       key: "details",
+    },
+    {
+      dataIndex: "action",
+      key: "action",
+      render: (text: any, record: Local) => (
+        <Dropdown overlay={menu(record)} trigger={["click"]}>
+          <Button
+            type="text"
+            icon={<MoreOutlined style={{ color: "#1890ff" }} />}
+          />
+        </Dropdown>
+      ),
     },
   ];
 

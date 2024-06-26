@@ -8,7 +8,7 @@ import AppHeader from "../../components/header";
 
 const { Content } = Layout;
 
-type Local = {
+type Event = {
   key: string;
   title: string;
   address: string;
@@ -59,7 +59,7 @@ const Events = () => {
       key: "date",
     },
   ];
-  const eventsData: Local[] = [
+  const eventsData: Event[] = [
     {
       key: "1",
       title: "Final Copa América",
