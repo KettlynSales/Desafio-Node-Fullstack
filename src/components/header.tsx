@@ -1,4 +1,5 @@
-import { Layout, Menu, Avatar } from "antd";
+import { Layout, Menu, Avatar, Row, Col } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import Logo from "../assets/logo.png";
 import { Link } from "react-router-dom";
 
@@ -12,6 +13,8 @@ const AppHeader = () => {
         justifyContent: "space-between",
         alignItems: "center",
         backgroundColor: "transparent",
+        position: "relative",
+        zIndex: 2
       }}
     >
       <img
@@ -25,6 +28,9 @@ const AppHeader = () => {
           background: "transparent",
           flexGrow: 1,
           textAlign: "center",
+          marginLeft: '65px',
+          marginTop: '6px'
+
         }}
       >
         <Menu.Item key="1">
@@ -43,8 +49,17 @@ const AppHeader = () => {
           </Link>
         </Menu.Item>
       </Menu>
-      <Avatar style={{ backgroundColor: "#87d068" }} icon="user" />
-      <body>Olá, Nome</body>
+      <Row align="middle" gutter={8} style={{ color: '#fff' }}>
+        <Col>
+          <Avatar style={{ backgroundColor: "#9ED0E6", color: "#000" }}>TA</Avatar>
+        </Col>
+        <Col>
+          <p style={{ margin: 0 }}>Olá, Nome</p>
+        </Col>
+        <Col>
+          <DownOutlined />
+        </Col>
+      </Row>
     </Header>
   );
 };
