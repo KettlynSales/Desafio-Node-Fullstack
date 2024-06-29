@@ -1,16 +1,27 @@
 import React from "react";
-import { Layout, Col, Card, Row } from "antd";
+import { Layout, Col, Card, Row, message } from "antd";
 import AppHeader from "../../../components/header";
 import { Form, Input, Button, Select, Divider } from "antd";
+import { createLocal } from '../../../services/local'; // Importe o serviço para criar locais
+import { useNavigate } from "react-router-dom";
+
 
 const { Content } = Layout;
 const { Option } = Select;
 
 const NewLocal = () => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  const onFinish = (values: any) => {
-    console.log("Success:", values);
+  const onFinish = async (values: any) => {
+    try {
+      await createLocal(values);
+      message.success('Local cadastrado com sucesso!')
+      navigate('/locais')
+    } catch (error) {
+      console.error('Erro ao cadastrar local', error);
+      message.error('Erro ao cadastrar local. Verifique os dados e tente novamente.');
+    }
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -54,7 +65,7 @@ const NewLocal = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Nome do local"
-                      name="nomeLocal"
+                      name="name"
                       rules={[
                         {
                           required: true,
@@ -66,7 +77,7 @@ const NewLocal = () => {
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item label="Apelido" name="apelido">
+                    <Form.Item label="Apelido" name="surname">
                       <Input placeholder="Informe um apelido (caso exista)" />
                     </Form.Item>
                   </Col>
@@ -76,7 +87,7 @@ const NewLocal = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Selecione um tipo"
-                      name="tipo"
+                      name="type"
                       rules={[{ required: true, message: "Selecione um tipo" }]}
                     >
                       <Select placeholder="Selecione um tipo">
@@ -101,7 +112,7 @@ const NewLocal = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Cidade"
-                      name="cidade"
+                      name="city"
                       rules={[{ required: true, message: "Informe a cidade" }]}
                     >
                       <Input placeholder="Informe a cidade" />
@@ -110,7 +121,7 @@ const NewLocal = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Estado"
-                      name="estado"
+                      name="state"
                       rules={[
                         { required: true, message: "Selecione um estado" },
                       ]}
@@ -127,7 +138,7 @@ const NewLocal = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="CEP"
-                      name="cep"
+                      name="zipCode"
                       rules={[{ required: true, message: "Informe o CEP" }]}
                     >
                       <Input placeholder="Informe o CEP" />
@@ -136,7 +147,7 @@ const NewLocal = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Endereço"
-                      name="endereco"
+                      name="address"
                       rules={[
                         { required: true, message: "Informe o endereço" },
                       ]}
@@ -147,7 +158,7 @@ const NewLocal = () => {
                 </Row>
 
                 <Col xs={24} md={12}>
-                  <Form.Item label="Complemento" name="complemento">
+                  <Form.Item label="Complemento" name="complement">
                     <Input placeholder="Informe o complemento" />
                   </Form.Item>
                 </Col>
@@ -165,7 +176,7 @@ const NewLocal = () => {
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item label="Telefone" name="telefone">
+                    <Form.Item label="Telefone" name="phone">
                       <Input placeholder="Informe um telefone" />
                     </Form.Item>
                   </Col>

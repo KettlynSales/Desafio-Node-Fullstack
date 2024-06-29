@@ -1,25 +1,40 @@
-import { useState } from "react";
-import { Layout, Col, Card, Table, Button, Input, Menu, Dropdown } from "antd";
+import { useEffect, useState } from "react";
+import { Layout, Col, Card, Table, Button, Input, Menu, Dropdown, Modal } from "antd";
 import { useNavigate } from "react-router-dom";
-import { SearchOutlined, MoreOutlined } from "@ant-design/icons";
+import { SearchOutlined, MoreOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import AppHeader from "../../components/header";
-import { useLocalStore } from '../../store/localStore';
-import { Local } from './types/local';
+import { useLocalStore } from '../../store/local';
+import { Gate, Local } from './types/local';
 import { CustomEmptyText } from './styles'; 
+import { getLocais, deleteLocal } from '../../services/local'; // Importe o serviço para obter locais
 
 const { Content } = Layout;
+const { confirm } = Modal;
 
 const Locais = () => {
   const navigate = useNavigate();
-  const { searchTerm, locaisData, setSearchTerm } = useLocalStore();
+  const { searchTerm, locaisData, setLocaisData, setSearchTerm } = useLocalStore();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(5); // Definindo o valor inicial de pageSize como 5
+  const [pageSize, setPageSize] = useState<number>(5); 
+
+  useEffect(() => {
+    const fetchLocais = async () => {
+      try {
+        const data = await getLocais();
+        setLocaisData(data);
+      } catch (error) {
+        console.error("Erro ao buscar locais:", error);
+      }
+    };
+
+    fetchLocais();
+  }, [setLocaisData])
 
   const handleMenuClick = (e: any, record: Local) => {
     if (e.key === "edit") {
-      navigate(`/edit/${record.key}`);
+      navigate(`/edit/${record.id}`);
     } else if (e.key === "delete") {
-      console.log("Apagar registro:", record.key);
+      showDeleteConfirm(record.id);
     }
   };
 
@@ -33,8 +48,8 @@ const Locais = () => {
   const LabelDataLocations = [
     {
       title: "Nome do Local",
-      dataIndex: "title",
-      key: "title",
+      dataIndex: "name",
+      key: "name",
     },
     {
       title: "Endereço",
@@ -43,19 +58,17 @@ const Locais = () => {
     },
     {
       title: "Cidade e Estado",
-      dataIndex: "cep",
-      key: "cep",
+      dataIndex: "cityState",
+      key: "cityState",
+      render: (_: any, record: Local) => `${record.city}, ${record.state}`,
     },
     {
       title: "Portões Cadastrados",
       dataIndex: "gates",
       key: "gates",
+      render: (gates: Gate[]) => gates.map(gate => gate.name).join(', '),
     },
-    {
-      title: "Atualização",
-      dataIndex: "update",
-      key: "update",
-    },
+
     {
       dataIndex: "action",
       key: "action",
@@ -70,9 +83,9 @@ const Locais = () => {
     },
   ];
 
-  const filteredData = locaisData.filter((local) =>
-    local.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = Array.isArray(locaisData) ? locaisData.filter((local) =>
+    local.name && local.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   const paginationConfig = {
     current: currentPage,
@@ -84,6 +97,33 @@ const Locais = () => {
 
   const handleNavigateNewLocal = () => {
     navigate("/newLocal");
+  };
+
+  const showDeleteConfirm = (id: string) => {
+    confirm({
+      title: 'Tem certeza que deseja apagar este local?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Esta ação não pode ser desfeita.',
+      okText: 'Sim',
+      okType: 'danger',
+      cancelText: 'Cancelar',
+      onOk() {
+        handleDelete(id);
+      },
+      onCancel() {
+        console.log('Cancelado');
+      },
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteLocal(id);
+      const updatedLocais = locaisData.filter(local => local.id !== id);
+      setLocaisData(updatedLocais);
+    } catch (error) {
+      console.error("Erro ao deletar local:", error);
+    }
   };
 
   return (

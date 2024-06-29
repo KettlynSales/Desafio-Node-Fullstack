@@ -1,35 +1,48 @@
-type Local = {
-  key: string;
-  localName: string;
-  address: string;
-  gates: string;
+import api from '../api/axios';
+
+export const getLocais = async () => {
+  const response = await api.get('/locais');
+  return response.data;
 };
 
-const locaisData: Local[] = [
-  {
-    key: "1",
-    localName: "Morumbi",
-    address: "Avenida Francisco Morato, 1000",
-    gates: "C.D.E.F.G.H.I.J.K",
-  },
-  {
-    key: "2",
-    localName: "Allianz Parque",
-    address: "Avenida Francisco Matarazzo, 1705",
-    gates: "3,4,5,6,7,8,9,10",
-  },
-  {
-    key: "3",
-    localName: "Neo Química Arena",
-    address: "Avenida Miguel Inácio Curi, 111",
-    gates: "info@corinthians.com",
-  },
-];
+export const createLocal = async (localData: {
+  name: string;
+  surname: string;
+  type: string;
+  cnpj: string;
+  city: string;
+  zipCode: string;
+  state: string;
+  address: string;
+  complement: string;
+  email: string;
+  phone: string;
+}) => {
+  const response = await api.post('/locais', localData);
+  return response.data;
+};
 
-export const fetchLocais = async (): Promise<Local[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(locaisData);
-    }, 1000);
-  });
+export const updateLocal = async (
+  id: string,
+  localData: {
+    name?: string;
+    surname?: string;
+    type?: string;
+    cnpj?: string;
+    city?: string;
+    zipCode?: string;
+    state?: string;
+    address?: string;
+    complement?: string;
+    email?: string;
+    phone?: string;
+  },
+) => {
+  const response = await api.patch(`/locais/${id}`, localData);
+  return response.data;
+};
+
+export const deleteLocal = async (id: string) => {
+  const response = await api.delete(`/locais/${id}`);
+  return response.data;
 };

@@ -1,35 +1,37 @@
-type Event = {
-  key: string;
-  eventName: string;
-  category: string;
-  local: string;
+import api from '../api/axios';
+
+export const getEvents = async () => {
+  const response = await api.get('/events');
+  return response.data;
 };
 
-const eventosData: Event[] = [
-  {
-    key: "1",
-    eventName: "Final Copa América",
-    category: "Futebol",
-    local: "Morumbi",
-  },
-  {
-    key: "2",
-    eventName: "Semi Final Copa América",
-    category: "Futebol",
-    local: "Morumbi",
-  },
-  {
-    key: "3",
-    eventName: "Love on tour - Harry Styles",
-    category: "Show",
-    local: "Morumbi",
-  },
-];
-
-export const fetchEventos = async (): Promise<Event[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(eventosData);
-    }, 1000);
-  });
+export const createEvent = async (eventData: {
+  name: string,
+    type:string,
+    date: string,
+    hour: string,
+    email: string,
+    phone: string,
+    localId: string
+}) => {
+  const response = await api.post('/events', eventData);
+  return response.data;
 };
+
+export const updateEvent = async (id: string, eventData:{
+  name?: string,
+  type?:string,
+  date?: string,
+  hour?: string,
+  email?: string,
+  phone?: string,
+  localId?: string
+}) => {
+  const response = await api.patch(`/events/${id}`, eventData);
+  return response.data
+}
+
+export const deleteEvent = async(id: string) => {
+  const response = await api.delete(`/events/${id}`);
+  return response.data
+}

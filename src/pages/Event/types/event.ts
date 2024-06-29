@@ -1,9 +1,10 @@
-export type Event = {
-    key: string;
-    title: string;
-    address: string;
-    local: string;
-    gates: string;
-    type: string;
-    date: string;
+export interface Event {
+  id: string;
+  name: string;
+  type: string;
+  date: string;
+  hour: string;
+  email: string;
+  phone: string;
+  localId: string;
   };
