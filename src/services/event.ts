@@ -5,6 +5,11 @@ export const getEvents = async () => {
   return response.data;
 };
 
+export const getEventById = async (id: string) => {
+  const response = await api.get(`/events/${id}`);
+  return response.data;
+};
+
 export const createEvent = async (eventData: {
   name: string,
     type:string,

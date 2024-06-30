@@ -1,59 +1,111 @@
-import React from "react";
-import { Layout, Col, Card, Row, message } from "antd";
-import AppHeader from "../../../components/header";
-import { Form, Input, Button, Select, Divider } from "antd";
-import { createLocal } from '../../../services/local'; // Importe o serviço para criar locais
-import { useNavigate } from "react-router-dom";
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import {
+  Col,
+  Row,
+  message,
+  Form,
+  Input,
+  Select,
+  Divider,
+  Breadcrumb,
+} from 'antd';
+import {
+  StyledLayout,
+  StyledContent,
+  FormContainer,
+  BreadcrumbContainer,
+  StyledCard,
+  SectionTitle,
+  FormButton,
+  SubmitButton,
+} from './styles';
 
-const { Content } = Layout;
+import AppHeader from '../../../components/header';
+import TagsInput from '../../../components/tagsInput';
+
+import {
+  createLocal,
+  getLocalById,
+  updateLocal,
+} from '../../../services/local';
+
+import { useLocalStore } from '../../../store/local';
+
+import { formatCNPJ, formatCEP, formatPhone } from '../../../utils/utils';
+
 const { Option } = Select;
 
 const NewLocal = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { setLocalEdit } = useLocalStore();
+
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    const fetchLocalData = async () => {
+      try {
+        if (id) {
+          const response = await getLocalById(id);
+          form.setFieldsValue(response);
+          setLocalEdit(response);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar local:', error);
+        message.error('Erro ao buscar local. Tente novamente mais tarde.');
+      }
+    };
+
+    fetchLocalData();
+  }, [id, form, setLocalEdit]);
 
   const onFinish = async (values: any) => {
     try {
-      await createLocal(values);
-      message.success('Local cadastrado com sucesso!')
-      navigate('/locais')
+      const gates = form.getFieldValue('gates');
+      const ticketGates = form.getFieldValue('ticketGates');
+      if (id) {
+        await updateLocal(id, values);
+        message.success('Local atualizado com sucesso!');
+      } else {
+        await createLocal({ ...values, gates, ticketGates });
+        message.success('Local cadastrado com sucesso!');
+      }
+      navigate('/locais');
     } catch (error) {
-      console.error('Erro ao cadastrar local', error);
-      message.error('Erro ao cadastrar local. Verifique os dados e tente novamente.');
+      console.error('Erro ao cadastrar/editar local', error);
+      message.error(
+        'Erro ao cadastrar/editar local. Verifique os dados e tente novamente.',
+      );
     }
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
+    console.log('Failed:', errorInfo);
   };
 
   return (
-    <Layout style={{ minHeight: "100vh", backgroundColor: "#191E28" }}>
+    <StyledLayout>
       <AppHeader />
-      <Content
-        style={{
-          padding: "0 50px",
-          marginTop: "40px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ width: "50%", maxWidth: "900px" }}>
-          <div style={{ marginBottom: "24px", textAlign: "left" }}>
-            <body style={{ color: "white", marginBottom: "25px" }}>
-              Home / Locais
-            </body>
-            <h1 style={{ color: "white", marginBottom: "5px" }}>
-              Adicionar novo local
+      <StyledContent>
+        <FormContainer>
+          <BreadcrumbContainer>
+            <Breadcrumb.Item>
+              <a href="/">Home</a>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <a href="/locais">Locais</a>
+            </Breadcrumb.Item>
+          </BreadcrumbContainer>
+          <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+            <h1 style={{ color: 'white', marginBottom: '5px' }}>
+              {id ? 'Editar Local' : 'Adicionar novo local'}
             </h1>
-            <p style={{ color: "white" }}>*Campos obrigatórios</p>
+            <p style={{ color: 'white' }}>*Campos obrigatórios</p>
           </div>
-          <Card style={{ borderWidth: 0, marginBottom: "50px", borderRadius: 20  }}>
-            <p style={{ color: "white", marginBottom: "20px" }}>
-              Informações básicas
-            </p>
+          <StyledCard>
+            <SectionTitle>Informações básicas</SectionTitle>
             <div className="form-container">
               <Form
                 form={form}
@@ -69,7 +121,7 @@ const NewLocal = () => {
                       rules={[
                         {
                           required: true,
-                          message: "Informe o nome do local",
+                          message: 'Informe o nome do local',
                         },
                       ]}
                     >
@@ -82,13 +134,12 @@ const NewLocal = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-
                 <Row gutter={16}>
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Selecione um tipo"
                       name="type"
-                      rules={[{ required: true, message: "Selecione um tipo" }]}
+                      rules={[{ required: true, message: 'Selecione um tipo' }]}
                     >
                       <Select placeholder="Selecione um tipo">
                         <Option value="tipo1">Tipo 1</Option>
@@ -97,23 +148,23 @@ const NewLocal = () => {
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item label="CNPJ" name="cnpj">
+                    <Form.Item
+                      label="CNPJ"
+                      name="cnpj"
+                      getValueFromEvent={(e) => formatCNPJ(e.target.value)}
+                    >
                       <Input placeholder="Informe o CNPJ" />
                     </Form.Item>
                   </Col>
                 </Row>
                 <Divider />
-
-                <p style={{ color: "white", marginBottom: "20px" }}>
-                  Localização
-                </p>
-
+                <SectionTitle>Localização</SectionTitle>
                 <Row gutter={16}>
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Cidade"
                       name="city"
-                      rules={[{ required: true, message: "Informe a cidade" }]}
+                      rules={[{ required: true, message: 'Informe a cidade' }]}
                     >
                       <Input placeholder="Informe a cidade" />
                     </Form.Item>
@@ -123,7 +174,7 @@ const NewLocal = () => {
                       label="Estado"
                       name="state"
                       rules={[
-                        { required: true, message: "Selecione um estado" },
+                        { required: true, message: 'Selecione um estado' },
                       ]}
                     >
                       <Select placeholder="Selecione um estado">
@@ -133,13 +184,13 @@ const NewLocal = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-
                 <Row gutter={16}>
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="CEP"
                       name="zipCode"
-                      rules={[{ required: true, message: "Informe o CEP" }]}
+                      rules={[{ required: true, message: 'Informe o CEP' }]}
+                      getValueFromEvent={(e) => formatCEP(e.target.value)}
                     >
                       <Input placeholder="Informe o CEP" />
                     </Form.Item>
@@ -149,7 +200,7 @@ const NewLocal = () => {
                       label="Endereço"
                       name="address"
                       rules={[
-                        { required: true, message: "Informe o endereço" },
+                        { required: true, message: 'Informe o endereço' },
                       ]}
                     >
                       <Input placeholder="Informe o endereço" />
@@ -163,59 +214,71 @@ const NewLocal = () => {
                   </Form.Item>
                 </Col>
                 <Divider />
-                <p style={{ color: "white", marginBottom: "20px" }}>Contato</p>
-
+                <SectionTitle>Contato</SectionTitle>
                 <Row gutter={16}>
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="E-mail"
                       name="email"
-                      rules={[{ required: true, message: "Informe um e-mail" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Informe um e-mail válido',
+                          type: 'email',
+                        },
+                      ]}
                     >
                       <Input placeholder="Informe um e-mail" />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item label="Telefone" name="phone">
+                    <Form.Item
+                      label="Telefone"
+                      name="phone"
+                      getValueFromEvent={(e) => formatPhone(e.target.value)}
+                    >
                       <Input placeholder="Informe um telefone" />
                     </Form.Item>
                   </Col>
                 </Row>
                 <Divider />
-                <p style={{ color: "white", marginBottom: '20px' }}>Cadastro de entradas e catracas</p>
-
+                <SectionTitle>Cadastro de entradas e catracas</SectionTitle>
                 <Row gutter={16}>
                   <Col xs={24} md={12}>
-                    <Form.Item label="Cadastre as entradas" name="entradas">
-                      <Input placeholder="Insira as entradas" />
-                    </Form.Item>
+                    <TagsInput
+                      label="Cadastre as entradas"
+                      placeholder="Insira as entradas"
+                      name="gates"
+                      form={form}
+                    />
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item label="Cadastre as catracas" name="catracas">
-                      <Input placeholder="Insira as catracas" />
-                    </Form.Item>
+                    <TagsInput
+                      label="Cadastre as catracas"
+                      placeholder="Insira as catracas"
+                      name="ticketGates"
+                      form={form}
+                    />
                   </Col>
                 </Row>
                 <Divider />
-
-                <Form.Item style={{ textAlign: "right"}}>
-                  <Button
+                <Form.Item style={{ textAlign: 'right' }}>
+                  <FormButton
                     htmlType="button"
                     onClick={() => form.resetFields()}
-                    style={{ marginRight: "15px", backgroundColor: 'transparent', color: "#fff" }}
                   >
                     Cancelar
-                  </Button>
-                  <Button type="primary" htmlType="submit" style={{backgroundColor: "#EBF0F9", color: "#000" }}>
-                    Cadastrar
-                  </Button>
+                  </FormButton>
+                  <SubmitButton type="primary" htmlType="submit">
+                    {id ? 'Salvar Alterações' : 'Cadastrar'}
+                  </SubmitButton>
                 </Form.Item>
               </Form>
             </div>
-          </Card>
-        </div>
-      </Content>
-    </Layout>
+          </StyledCard>
+        </FormContainer>
+      </StyledContent>
+    </StyledLayout>
   );
 };
 

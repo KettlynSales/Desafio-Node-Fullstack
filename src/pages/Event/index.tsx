@@ -1,34 +1,38 @@
 import { useEffect, useState } from 'react';
-import {
-  Layout,
-  Col,
-  Card,
-  Table,
-  Button,
-  Input,
-  Tag,
-  Menu,
-  Dropdown,
-  Modal,
-} from 'antd';
+import { useNavigate } from 'react-router-dom';
+
+import { Col, Card, Table, Button, Tag, Menu, Dropdown, Modal } from 'antd';
 import {
   SearchOutlined,
   MoreOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import AppHeader from '../../components/header';
-import { useEventStore } from '../../store/event';
-import { Event } from './types/event';
-import { CustomEmptyText } from './styles';
-import { getEvents } from '../../services/event';
+import {
+  StyledLayout,
+  StyledContent,
+  Breadcrumb,
+  HeaderWrapper,
+  HeaderTitle,
+  HeaderSubtitle,
+  SearchAndButtonWrapper,
+  StyledInput,
+  StyledButton,
+  CustomEmptyText,
+} from './styles';
 
-const { Content } = Layout;
+import AppHeader from '../../components/header';
+
+import { useEventStore } from '../../store/event';
+
+import { getEvents, deleteEvent } from '../../services/event';
+
+import { Event } from './types/event';
+
 const { confirm } = Modal;
 
 const Events = () => {
   const navigate = useNavigate();
-  const { searchTerm, setSearchTerm, eventsData, setEventsData } =
+  const { searchTerm, setSearchTerm, eventsData, setEventEdit, setEventsData } =
     useEventStore();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(5);
@@ -46,20 +50,27 @@ const Events = () => {
     fetchEvents();
   }, [setEventsData]);
 
-  const handleMenuClick = (e: any, record: Event) => {
-    if (e.key === 'edit') {
-      navigate(`/edit/${record.id}`);
-    } else if (e.key === 'delete') {
-      showDeleteConfirm(record.id);
-    }
+  const paginationConfig = {
+    current: currentPage,
+    pageSize: pageSize,
+    onChange: (page: number) => {
+      setCurrentPage(page);
+    },
+    onShowSizeChange: (size: number) => {
+      setPageSize(size);
+    },
   };
 
-  const menu = (record: Event) => (
-    <Menu onClick={(e) => handleMenuClick(e, record)}>
-      <Menu.Item key="edit">Editar</Menu.Item>
-      <Menu.Item key="delete">Apagar</Menu.Item>
-    </Menu>
-  );
+  const items = [
+    {
+      key: '1',
+      label: <Menu.Item key="edit">Editar</Menu.Item>,
+    },
+    {
+      key: '2',
+      label: <Menu.Item key="delete">Apagar</Menu.Item>,
+    },
+  ];
 
   const LabelDataEvents = [
     {
@@ -93,8 +104,11 @@ const Events = () => {
     {
       dataIndex: 'action',
       key: 'action',
-      render: (text: any, record: Event) => (
-        <Dropdown overlay={menu(record)} trigger={['click']}>
+      render: (_text: string, record: Event) => (
+        <Dropdown
+          menu={{ items, onClick: ({ key }) => handleMenuClick(key, record) }}
+          trigger={['click']}
+        >
           <Button
             type="text"
             icon={<MoreOutlined style={{ color: '#1890ff' }} />}
@@ -104,10 +118,6 @@ const Events = () => {
     },
   ];
 
-  const handleNavigateNewEvent = () => {
-    navigate('/newEvent');
-  };
-
   const filteredEvents = Array.isArray(eventsData)
     ? eventsData.filter(
         (event) =>
@@ -116,15 +126,27 @@ const Events = () => {
       )
     : [];
 
-  const paginationConfig = {
-    current: currentPage,
-    pageSize: pageSize,
-    onChange: (page: number) => {
-      setCurrentPage(page);
-    },
-    onShowSizeChange: (size: number) => {
-      setPageSize(size);
-    },
+  const handleMenuClick = (key: string, record: Event) => {
+    if (key === '1') {
+      setEventEdit(record);
+      navigate(`/newEvent/${record.id}`);
+    } else if (key === '2') {
+      showDeleteConfirm(record.id);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteEvent(id);
+      const updatedEvents = eventsData.filter((event) => event.id !== id);
+      setEventsData(updatedEvents);
+    } catch (error) {
+      console.error('Erro ao deletar evento:', error);
+    }
+  };
+
+  const handleNavigateNewEvent = () => {
+    navigate('/newEvent');
   };
 
   const showDeleteConfirm = (id: string) => {
@@ -144,63 +166,30 @@ const Events = () => {
     });
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteEvent(id);
-      const updatedEvents = eventsData.filter((event) => event.id !== id);
-      setEventsData(updatedEvents);
-    } catch (error) {
-      console.error('Erro ao deletar evento:', error);
-    }
-  };
-
   return (
-    <Layout style={{ minHeight: '100vh', backgroundColor: '#191E28' }}>
+    <StyledLayout>
       <AppHeader />
-      <Content
-        style={{
-          padding: '0 50px',
-          marginTop: '50px',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <p style={{ color: 'white', marginBottom: '35px' }}>Home / Eventos</p>
-        <div style={{ marginBottom: '25px' }}>
-          <h1 style={{ color: 'white', marginBottom: '5px' }}>Eventos</h1>
-          <p style={{ color: 'white' }}>
+      <StyledContent>
+        <Breadcrumb>Home / Eventos</Breadcrumb>
+        <HeaderWrapper>
+          <HeaderTitle>Eventos</HeaderTitle>
+          <HeaderSubtitle>
             Confira a lista de todos os eventos cadastrados
-          </p>
-        </div>
+          </HeaderSubtitle>
+        </HeaderWrapper>
         <Col>
           <Card>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '30px',
-              }}
-            >
-              <Input
+            <SearchAndButtonWrapper>
+              <StyledInput
                 placeholder="Pesquise por nome do evento"
                 prefix={<SearchOutlined />}
-                style={{ width: '30%' }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Button
-                type="primary"
-                onClick={handleNavigateNewEvent}
-                style={{
-                  backgroundColor: '#CAD6EC',
-                  color: 'black',
-                  borderWidth: 0,
-                }}
-              >
+              <StyledButton type="primary" onClick={handleNavigateNewEvent}>
                 Adicionar Evento
-              </Button>
-            </div>
+              </StyledButton>
+            </SearchAndButtonWrapper>
             <Table
               columns={LabelDataEvents}
               dataSource={filteredEvents}
@@ -213,13 +202,9 @@ const Events = () => {
             />
           </Card>
         </Col>
-      </Content>
-    </Layout>
+      </StyledContent>
+    </StyledLayout>
   );
 };
 
 export default Events;
-function deleteEvent(id: string) {
-  throw new Error('Function not implemented.');
-}
-

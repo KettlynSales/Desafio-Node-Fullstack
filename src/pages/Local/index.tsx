@@ -1,21 +1,48 @@
-import { useEffect, useState } from "react";
-import { Layout, Col, Card, Table, Button, Input, Menu, Dropdown, Modal } from "antd";
-import { useNavigate } from "react-router-dom";
-import { SearchOutlined, MoreOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import AppHeader from "../../components/header";
-import { useLocalStore } from '../../store/local';
-import { Gate, Local } from './types/local';
-import { CustomEmptyText } from './styles'; 
-import { getLocais, deleteLocal } from '../../services/local'; // Importe o serviço para obter locais
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const { Content } = Layout;
+import { Col, Table, Menu, Dropdown, Modal, Button, Breadcrumb } from 'antd';
+import {
+  SearchOutlined,
+  MoreOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
+import {
+  StyledLayout,
+  StyledContent,
+  HeaderTitle,
+  HeaderSubtitle,
+  StyledCard,
+  SearchContainer,
+  SearchInput,
+  AddButton,
+  CustomEmptyText,
+  BreadcrumbContainer,
+} from './styles';
+
+import AppHeader from '../../components/header';
+
+import { useLocalStore } from '../../store/local';
+
+import { getLocais, deleteLocal } from '../../services/local';
+
+import { Gate, Local } from './types/local';
+
 const { confirm } = Modal;
 
 const Locais = () => {
   const navigate = useNavigate();
-  const { searchTerm, locaisData, setLocaisData, setSearchTerm } = useLocalStore();
+  const {
+    searchTerm,
+    locaisData,
+    setLocaisData,
+    setLocalEdit,
+    setSearchTerm,
+    setGates,
+    setTicketGates,
+  } = useLocalStore();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(5); 
+  const [pageSize] = useState<number>(5);
 
   useEffect(() => {
     const fetchLocais = async () => {
@@ -23,80 +50,79 @@ const Locais = () => {
         const data = await getLocais();
         setLocaisData(data);
       } catch (error) {
-        console.error("Erro ao buscar locais:", error);
+        console.error('Erro ao buscar locais:', error);
       }
     };
 
     fetchLocais();
-  }, [setLocaisData])
+  }, [setLocaisData]);
 
-  const handleMenuClick = (e: any, record: Local) => {
-    if (e.key === "edit") {
-      navigate(`/edit/${record.id}`);
-    } else if (e.key === "delete") {
-      showDeleteConfirm(record.id);
-    }
-  };
-
-  const menu = (record: Local) => (
-    <Menu onClick={(e) => handleMenuClick(e, record)}>
-      <Menu.Item key="edit">Editar</Menu.Item>
-      <Menu.Item key="delete">Apagar</Menu.Item>
-    </Menu>
-  );
+  const items = [
+    {
+      key: '1',
+      label: <Menu.Item key="edit">Editar</Menu.Item>,
+    },
+    {
+      key: '2',
+      label: <Menu.Item key="delete">Apagar</Menu.Item>,
+    },
+  ];
 
   const LabelDataLocations = [
     {
-      title: "Nome do Local",
-      dataIndex: "name",
-      key: "name",
+      title: 'Nome do Local',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      title: "Endereço",
-      dataIndex: "address",
-      key: "address",
+      title: 'Endereço',
+      dataIndex: 'address',
+      key: 'address',
     },
     {
-      title: "Cidade e Estado",
-      dataIndex: "cityState",
-      key: "cityState",
+      title: 'Cidade e Estado',
+      dataIndex: 'cityState',
+      key: 'cityState',
       render: (_: any, record: Local) => `${record.city}, ${record.state}`,
     },
     {
-      title: "Portões Cadastrados",
-      dataIndex: "gates",
-      key: "gates",
-      render: (gates: Gate[]) => gates.map(gate => gate.name).join(', '),
+      title: 'Portões Cadastrados',
+      dataIndex: 'gates',
+      key: 'gates',
+      render: (gates: Gate[]) => gates.map((gate) => gate.name).join(', '),
     },
 
     {
-      dataIndex: "action",
-      key: "action",
-      render: (text: any, record: Local) => (
-        <Dropdown overlay={menu(record)} trigger={["click"]}>
+      dataIndex: 'action',
+      key: 'action',
+      render: (_text: string, record: Local) => (
+        <Dropdown
+          menu={{ items, onClick: ({ key }) => handleMenuClick(key, record) }}
+          trigger={['click']}
+        >
           <Button
             type="text"
-            icon={<MoreOutlined style={{ color: "#1890ff" }} />}
+            icon={<MoreOutlined style={{ color: '#1890ff' }} />}
           />
         </Dropdown>
       ),
     },
   ];
 
-  const filteredData = Array.isArray(locaisData) ? locaisData.filter((local) =>
-    local.name && local.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
+  const filteredData = Array.isArray(locaisData)
+    ? locaisData.filter(
+        (local) =>
+          local.name &&
+          local.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : [];
 
   const paginationConfig = {
     current: currentPage,
     pageSize: pageSize,
     onChange: (page: number) => {
       setCurrentPage(page);
-    }
-  };
-
-  const handleNavigateNewLocal = () => {
-    navigate("/newLocal");
+    },
   };
 
   const showDeleteConfirm = (id: string) => {
@@ -116,76 +142,77 @@ const Locais = () => {
     });
   };
 
+  const handleMenuClick = (key: string, record: Local) => {
+    if (key === '1') {
+      setLocalEdit(record);
+      navigate(`/newLocal/${record.id}`);
+    } else if (key === '2') {
+      showDeleteConfirm(record.id);
+    }
+  };
+
+  const handleNavigateNewLocal = () => {
+    setGates([]);
+    setTicketGates([]);
+    navigate('/newLocal');
+  };
+
   const handleDelete = async (id: string) => {
     try {
       await deleteLocal(id);
-      const updatedLocais = locaisData.filter(local => local.id !== id);
+      const updatedLocais = locaisData.filter((local) => local.id !== id);
       setLocaisData(updatedLocais);
     } catch (error) {
-      console.error("Erro ao deletar local:", error);
+      console.error('Erro ao deletar local:', error);
     }
   };
 
   return (
-    <Layout style={{ minHeight: "100vh", backgroundColor: "#191E28" }}>
+    <StyledLayout>
       <AppHeader />
-      <Content
-        style={{
-          padding: "0 50px",
-          marginTop: "50px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <p style={{ color: "white", marginBottom: "35px" }}>
-          Home / Locais
-        </p>
-        <div style={{ marginBottom: "25px" }}>
-          <h1 style={{ color: "white", marginBottom: "5px" }}>Locais</h1>
-          <p style={{ color: "white" }}>
+      <StyledContent>
+        <BreadcrumbContainer>
+          <Breadcrumb.Item>
+            <a href="/">Home</a>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <a href="/locais">Locais</a>
+          </Breadcrumb.Item>
+        </BreadcrumbContainer>
+        <div style={{ marginBottom: '25px' }}>
+          <HeaderTitle>Locais</HeaderTitle>
+          <HeaderSubtitle>
             Confira a lista de todos os locais cadastrados
-          </p>
+          </HeaderSubtitle>
         </div>
         <Col>
-          <Card>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "30px",
-              }}
-            >
-              <Input
+          <StyledCard>
+            <SearchContainer>
+              <SearchInput
                 placeholder="Pesquise por nome do local"
                 prefix={<SearchOutlined />}
-                style={{ width: "30%" }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
 
-              <Button
-                type="primary"
-                onClick={handleNavigateNewLocal}
-                style={{
-                  backgroundColor: "#CAD6EC",
-                  color: "black",
-                  borderWidth: 0,
-                }}
-              >
+              <AddButton type="primary" onClick={handleNavigateNewLocal}>
                 Adicionar Local
-              </Button>
-            </div>
+              </AddButton>
+            </SearchContainer>
             <Table
               columns={LabelDataLocations}
               dataSource={filteredData}
               pagination={paginationConfig}
-              locale={{ emptyText: <CustomEmptyText>Nenhum resultado encontrado</CustomEmptyText> }} // Usando o componente estilizado
+              locale={{
+                emptyText: (
+                  <CustomEmptyText>Nenhum resultado encontrado</CustomEmptyText>
+                ),
+              }}
             />
-          </Card>
+          </StyledCard>
         </Col>
-      </Content>
-    </Layout>
+      </StyledContent>
+    </StyledLayout>
   );
 };
 

@@ -1,51 +1,123 @@
-import React from "react";
-import { Layout, Col, Card, Flex, Divider } from "antd";
-import AppHeader from "../../../components/header";
-import { Form, Input, Button, Select, Row } from "antd";
-import "./styles";
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const { Content } = Layout;
+import {
+  Col,
+  Divider,
+  Row,
+  Select,
+  Form,
+  Input,
+  Breadcrumb,
+  message,
+} from 'antd';
+import {
+  StyledLayout,
+  StyledContent,
+  Wrapper,
+  HeaderTitle,
+  HeaderSubtitle,
+  StyledCard,
+  SectionTitle,
+  FormContainer,
+  CancelButton,
+  SubmitButton,
+  BreadcrumbContainer,
+} from './styles';
+
+import AppHeader from '../../../components/header';
+
+import {
+  createEvent,
+  getEventById,
+  updateEvent,
+} from '../../../services/event';
+
+import { useEventStore } from '../../../store/event';
+import { useLocalStore } from '../../../store/local';
+
+import {
+  formatDate,
+  formatTime,
+  formatPhone,
+  validateFutureDate,
+} from '../../../utils/utils';
+
 const { Option } = Select;
 
 const NewEvent = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  const { setEventEdit } = useEventStore();
+
+  const { locaisData } = useLocalStore();
+  console.log(locaisData);
+
   const [form] = Form.useForm();
 
-  const onFinish = (values: any) => {
-    console.log("Success:", values);
+  useEffect(() => {
+    const fetchLocalData = async () => {
+      try {
+        if (id) {
+          const response = await getEventById(id);
+          form.setFieldsValue(response);
+          setEventEdit(response);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar evento:', error);
+        message.error('Erro ao buscar evento. Tente novamente mais tarde.');
+      }
+    };
+
+    fetchLocalData();
+  }, [id, form, setEventEdit]);
+
+  const onFinish = async (values: any) => {
+    try {
+      if (id) {
+        await updateEvent(id, values);
+        message.success('Evento atualizado com sucesso!');
+      } else {
+        await createEvent(values);
+        message.success('Evento cadastrado com sucesso!');
+      }
+      navigate('/events');
+    } catch (error) {
+      console.error('Erro ao cadastrar/editar evento', error);
+      message.error(
+        'Erro ao cadastrar/editar evento. Verifique os dados e tente novamente.',
+      );
+    }
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
+    console.log('Failed:', errorInfo);
   };
 
   return (
-    <Layout style={{ minHeight: "100vh", backgroundColor: "#191E28" }}>
+    <StyledLayout>
       <AppHeader />
-      <Content
-        style={{
-          marginTop: "50px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ width: "50%", maxWidth: "900px" }}>
-          <div style={{ marginBottom: "24px", textAlign: "left" }}>
-            <body style={{ color: "white", marginBottom: "25px" }}>
-              Home / Eventos
-            </body>
-            <h1 style={{ color: "white", marginBottom: "5px" }}>
-              Adicionar novo evento
-            </h1>
-            <p style={{ color: "white" }}>*Campos obrigatórios</p>
+      <StyledContent>
+        <Wrapper>
+          <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+            <BreadcrumbContainer>
+              <Breadcrumb.Item>
+                <a href="/">Home</a>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <a href="/locais">Locais</a>
+              </Breadcrumb.Item>
+            </BreadcrumbContainer>
+            <HeaderTitle>
+              {' '}
+              {id ? 'Editar evento' : 'Adicionar novo evento'}
+            </HeaderTitle>
+            <HeaderSubtitle>*Campos obrigatórios</HeaderSubtitle>
           </div>
-          <Card
-            style={{ borderWidth: 0, marginBottom: "40px", borderRadius: 20 }}
-          >
-            <p style={{ color: "white", marginBottom: "20px" }}>
-              Informações básicas
-            </p>
-            <div className="form-container">
+          <StyledCard>
+            <SectionTitle>Informações básicas</SectionTitle>
+            <FormContainer>
               <Form
                 form={form}
                 layout="vertical"
@@ -56,11 +128,11 @@ const NewEvent = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Nome do evento"
-                      name="nomeEvent"
+                      name="name"
                       rules={[
                         {
                           required: true,
-                          message: "Informe o nome do evento",
+                          message: 'Informe o nome do evento',
                         },
                       ]}
                     >
@@ -71,7 +143,7 @@ const NewEvent = () => {
                     <Form.Item
                       label="Selecione um tipo"
                       name="type"
-                      rules={[{ required: true, message: "Selecione um tipo" }]}
+                      rules={[{ required: true, message: 'Selecione um tipo' }]}
                     >
                       <Select placeholder="Selecione um tipo">
                         <Option value="type1">Futebol</Option>
@@ -89,9 +161,10 @@ const NewEvent = () => {
                       rules={[
                         {
                           required: true,
-                          message: "Informe a data do evento",
+                          validator: validateFutureDate,
                         },
                       ]}
+                      getValueFromEvent={(e) => formatDate(e.target.value)}
                     >
                       <Input placeholder="00/00/0000" />
                     </Form.Item>
@@ -99,13 +172,14 @@ const NewEvent = () => {
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Horário do evento"
-                      name="nomeEvent"
+                      name="hour"
                       rules={[
                         {
                           required: true,
-                          message: "Informe o horário",
+                          message: 'Informe o horário',
                         },
                       ]}
+                      getValueFromEvent={(e) => formatTime(e.target.value)}
                     >
                       <Input placeholder="00:00" />
                     </Form.Item>
@@ -115,54 +189,57 @@ const NewEvent = () => {
                 <Col xs={24} md={12}>
                   <Form.Item
                     label="Selecione um local"
-                    name="local"
-                    rules={[{ required: true, message: "Selecione um local" }]}
+                    name="localId"
+                    rules={[{ required: true, message: 'Selecione um local' }]}
                   >
                     <Select placeholder="Selecione um local">
-                      <Option value="local1">Morumbi</Option>
-                      <Option value="local2">Allianz</Option>
+                      {locaisData.map((local) => (
+                        <Option key={local.id} value={local.id}>
+                          {local.name}
+                        </Option>
+                      ))}
                     </Select>
                   </Form.Item>
                 </Col>
                 <Divider />
-                <p style={{ color: "white", marginBottom: "20px" }}>Contato</p>
+                <SectionTitle>Contato</SectionTitle>
 
                 <Row gutter={16}>
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="E-mail"
                       name="email"
-                      rules={[{ required: true, message: "Informe um e-mail" }]}
+                      rules={[{ required: true, message: 'Informe um e-mail' }]}
                     >
                       <Input placeholder="Informe um e-mail" />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item label="Telefone" name="telefone">
+                    <Form.Item
+                      label="Telefone"
+                      name="phone"
+                      getValueFromEvent={(e) => formatPhone(e.target.value)}
+                    >
                       <Input placeholder="Informe um telefone" />
                     </Form.Item>
                   </Col>
                 </Row>
                 <Divider />
 
-                <Form.Item style={{ textAlign: "right"}}>
-                  <Button
-                    htmlType="button"
-                    onClick={() => form.resetFields()}
-                    style={{ marginRight: "15px", backgroundColor: 'transparent', color: "#fff" }}
-                  >
+                <Form.Item style={{ textAlign: 'right' }}>
+                  <CancelButton htmlType="button" onClick={() => navigate(-1)}>
                     Cancelar
-                  </Button>
-                  <Button type="primary" htmlType="submit" style={{backgroundColor: "#EBF0F9", color: "#000" }}>
-                    Cadastrar
-                  </Button>
+                  </CancelButton>
+                  <SubmitButton type="primary" htmlType="submit">
+                    {id ? 'Salvar Alterações' : 'Cadastrar'}
+                  </SubmitButton>
                 </Form.Item>
               </Form>
-            </div>
-          </Card>
-        </div>
-      </Content>
-    </Layout>
+            </FormContainer>
+          </StyledCard>
+        </Wrapper>
+      </StyledContent>
+    </StyledLayout>
   );
 };
 

@@ -1,16 +1,20 @@
 import { create } from "zustand";
 import { Event } from "../pages/Event/types/event";
 
-type eventState = {
+type EventState = {
   searchTerm: string;
   eventsData: Event[];
+  eventEdit: Event | null
+  setEventEdit: (event: Event | null) => void;
   setEventsData: (data: Event[]) => void;
   setSearchTerm: (term: string) => void;
 };
 
-export const useEventStore = create<eventState>((set) => ({
+export const useEventStore = create<EventState>((set) => ({
   searchTerm: '',
   eventsData: [],
-  setEventsData: (data) => set({ eventsData: data}),
+  eventEdit: null,
+  setEventEdit: (event) => set({ eventEdit: event }),
+  setEventsData: (data: Event[]) => set({ eventsData: data}),
   setSearchTerm: (term) => set({ searchTerm: term})
 }))

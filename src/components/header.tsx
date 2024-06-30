@@ -44,7 +44,7 @@ const AppHeader = () => {
           </Link>
         </Menu.Item>
         <Menu.Item key="3">
-          <Link to="/locations" style={{ color: "white" }}>
+          <Link to="/locais" style={{ color: "white" }}>
             Locais
           </Link>
         </Menu.Item>

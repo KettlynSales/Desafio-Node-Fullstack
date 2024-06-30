@@ -5,6 +5,12 @@ export const getLocais = async () => {
   return response.data;
 };
 
+export const getLocalById = async (id: string) => {
+  const response = await api.get(`/locais/${id}`);
+  return response.data;
+};
+
+
 export const createLocal = async (localData: {
   name: string;
   surname: string;
@@ -17,6 +23,8 @@ export const createLocal = async (localData: {
   complement: string;
   email: string;
   phone: string;
+  gates: string[];
+  ticketGates: string[];
 }) => {
   const response = await api.post('/locais', localData);
   return response.data;

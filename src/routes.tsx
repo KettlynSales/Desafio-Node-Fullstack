@@ -8,8 +8,10 @@ import NewEvent from "./pages/Event/NewEvent";
 export const router = createBrowserRouter([
   { path: "/", element: <Home /> },
   { path: "/events", element: <Events /> },
-  { path: "/locations", element: <Locais /> },
+  { path: "/locais", element: <Locais /> },
   { path: "/newLocal", element: <NewLocal /> },
   { path: "/newEvent", element: <NewEvent /> },
-  { path: "/editLocal/:id", element: <NewLocal /> },
+  { path: "/newLocal/:id", element: <NewLocal /> },
+  { path: "/newEvent/:id", element: <NewEvent /> },
+
 ]);

@@ -1,318 +1,233 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { Table, Tag, Row, Col, Menu, Dropdown, Card, Button } from 'antd';
+import { MoreOutlined, HomeOutlined, CalendarFilled } from '@ant-design/icons';
 import {
-  Layout,
-  Card,
-  Button,
-  Table,
-  Tag,
-  Row,
-  Col,
-  Menu,
-  Dropdown,
-} from "antd";
-import { MoreOutlined, HomeOutlined, CalendarFilled } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import AppHeader from "../../components/header";
-import Doll from "../../assets/boneco.png";
-import BackgroundImage from "../../assets/background.jpg";
+  StyledLayout,
+  BackgroundOverlay,
+  StyledContent,
+  HeaderContainer,
+  GreetingText,
+  StyledRow,
+  LocalCard,
+  EventCard,
+  CardContent,
+  CardTitle,
+  CardButton,
+  CardDescription,
+} from './styles';
 
-const { Content } = Layout;
+import AppHeader from '../../components/header';
+import Doll from '../../assets/boneco.png';
+import BackgroundImage from '../../assets/background.jpg';
 
-type Local = {
-  key: string;
-  localName: string;
-  address: string;
-  gates: string;
-};
+import { Gate, Local } from '../Local/types/local';
+import { Event } from '../Event/types/event';
 
-type Evento = {
-  key: string;
-  eventName: string;
-  category: string;
-  local: string;
-};
+import { getLocais } from '../../services/local';
+import { getEvents } from '../../services/event';
+
+import { useEventStore } from '../../store/event';
+import { useLocalStore } from '../../store/local';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { locaisData, setLocaisData } = useLocalStore();
+  const { eventsData, setEventsData } = useEventStore();
 
-  const handleMenuClick = (e: any, record: Local) => {
-    if (e.key === "edit") {
-      // Navegar para a página de edição com os detalhes do registro
-      navigate(`/edit/${record.key}`);
-    } else if (e.key === "delete") {
-      // Lógica para apagar o registro
-      console.log("Apagar registro:", record.key);
-    }
-  };
+  useEffect(() => {
+    const fetchLocais = async () => {
+      try {
+        const data = await getLocais();
+        setLocaisData(data);
+      } catch (error) {
+        console.error('Erro ao buscar locais:', error);
+      }
+    };
 
-  const menu = (record: Local) => (
-    <Menu onClick={(e) => handleMenuClick(e, record)}>
-      <Menu.Item key="edit">Editar</Menu.Item>
-      <Menu.Item key="delete">Apagar</Menu.Item>
-    </Menu>
-  );
+    fetchLocais();
+  }, [setLocaisData]);
 
-  const locaisColumns = [
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await getEvents();
+        setEventsData(data);
+      } catch (error) {
+        console.error('Erro ao buscar eventos:', error);
+      }
+    };
+
+    fetchEvents();
+  }, [setEventsData]);
+
+  const items = [
     {
-      title: "Local",
-      dataIndex: "localName",
-      key: "localName",
+      key: '1',
+      label: <Menu.Item key="edit">Editar</Menu.Item>,
     },
     {
-      title: "Endereço",
-      dataIndex: "address",
-      key: "address",
-    },
-    {
-      title: 'Portões',
-      dataIndex: "gates",
-      key: "gates",
-    },
-    {
-      dataIndex: "action",
-      key: "action",
-      render: (text: any, record: Local) => (
-        <Dropdown overlay={menu(record)} trigger={["click"]}>
-          <Button
-            type="text"
-            icon={<MoreOutlined style={{ color: "#1890ff" }} />}
-          />
-        </Dropdown>
-      ),
+      key: '2',
+      label: <Menu.Item key="delete">Apagar</Menu.Item>,
     },
   ];
 
-  const locaisData: Local[] = [
+  const locaisColumns = [
     {
-      key: "1",
-      localName: "Morumbi",
-      address: "Avenida Francisc...",
-      gates: "C.D.E.F.G.H.I.J.K",
+      title: 'Local',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      key: "2",
-      localName: "Allianz Parque",
-      address: "Avenida Francisc...",
-      gates: "3,4,5,6,7,8,9,10",
+      title: 'Endereço',
+      dataIndex: 'address',
+      key: 'address',
     },
     {
-      key: "3",
-      localName: "Neo Química Arena",
-      address: "Avenida Francisc...",
-      gates: "info@corinthians.com",
+      title: 'Portões Cadastrados',
+      dataIndex: 'gates',
+      key: 'gates',
+      render: (gates: Gate[]) => gates.map((gate) => gate.name).join(', '),
+    },
+    {
+      dataIndex: 'action',
+      key: 'action',
+      render: (_text: any, record: Local) => (
+        <Dropdown
+          menu={{ items, onClick: ({ key }) => handleMenuClick(key, record) }}
+          trigger={['click']}
+        >
+          <Button
+            type="text"
+            icon={<MoreOutlined style={{ color: '#1890ff' }} />}
+          />
+        </Dropdown>
+      ),
     },
   ];
 
   const eventosColumns = [
     {
-      title: "Evento",
-      dataIndex: "eventName",
-      key: "eventName",
+      title: 'Evento',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      title: "Categoria",
-      dataIndex: "category",
-      key: "category",
-      render: (category: string) => (
-        <Tag style={{color: category === "Futebol" ? "#000" : "#fff"}} color={category === "Futebol" ? "#CAD6EC" : "#61461F"}>{category}</Tag>
+      title: 'Tipo',
+      dataIndex: 'type',
+      key: 'type',
+      render: (type: string) => (
+        <Tag
+          style={{ color: type === 'Futebol' ? '#000' : '#fff' }}
+          color={type === 'Futebol' ? '#CAD6EC' : '#61461F'}
+        >
+          {type}
+        </Tag>
       ),
     },
     {
-      title: "Local",
-      dataIndex: "local",
-      key: "local",
+      title: 'Local',
+      dataIndex: 'localId',
+      key: 'localId',
     },
     {
-      dataIndex: "action",
-      key: "action",
-      render: (text: any, record: Local) => (
-        <Dropdown overlay={menu(record)} trigger={["click"]}>
+      dataIndex: 'action',
+      key: 'action',
+      render: (_text: any, record: Event) => (
+        <Dropdown
+          menu={{
+            items,
+            onClick: ({ key }) => handleMenuClickEvent(key, record),
+          }}
+          trigger={['click']}
+        >
           <Button
             type="text"
-            icon={<MoreOutlined style={{ color: "#1890ff" }} />}
+            icon={<MoreOutlined style={{ color: '#1890ff' }} />}
           />
         </Dropdown>
       ),
     },
   ];
 
-  const eventosData: Evento[] = [
-    {
-      key: "1",
-      eventName: "Final Copa América",
-      category: "Futebol",
-      local: "Morumbi",
-    },
-    {
-      key: "2",
-      eventName: "Semi Final Copa América",
-      category: "Futebol",
-      local: "Morumbi",
-    },
-    {
-      key: "3",
-      eventName: "Love on tour - Harry Styles",
-      category: "Show",
-      local: "Morumbi",
-    },
-   
-   
-  ];
+  const handleMenuClick = (key: string, record: Local) => {
+    if (key === '1') {
+      navigate(`/newLocal/${record.id}`);
+    } else if (key === '2') {
+      console.log('Apagar registro:', record.id);
+    }
+  };
+
+  const handleMenuClickEvent = (key: string, record: Event) => {
+    if (key === '1') {
+      navigate(`/newEvent/${record.id}`);
+    } else if (key === '2') {
+      console.log('Apagar registro:', record.id);
+    }
+  };
 
   const handleNavigateLocais = () => {
-    navigate("/locations");
+    navigate('/locais');
   };
 
   const handleNavigateEventos = () => {
-    navigate("/events");
+    navigate('/events');
   };
 
   return (
-    <Layout
-      style={{
-        minHeight: "100vh",
-        position: "relative",
-        overflow: "hidden",
-        backgroundImage: `url(${BackgroundImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.7)", // Ajuste a opacidade aqui
-          zIndex: 1,
-        }}
-      />
+    <StyledLayout backgroundImage={BackgroundImage}>
+      <BackgroundOverlay />
       <AppHeader />
-      <Content
-        style={{
-          padding: "0 50px",
-          marginTop: "60px",
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-          zIndex: 2,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            marginBottom: "20px",
-            alignItems: "center",
-          }}
-        >
-          <img
-            src={Doll}
-            alt="Imagem ao lado do texto"
-            style={{ marginRight: "20px", maxWidth: "200px", height: "auto" }}
-          />
+      <StyledContent>
+        <HeaderContainer>
+          <img src={Doll} alt="Imagem ao lado do texto" />
           <div>
-            <h1 style={{ color: "white" }}>Olá, Mariana</h1>
-            <p style={{ color: "white" }}>
+            <h1>Olá, Mariana</h1>
+            <GreetingText>
               Confira todos os seus eventos e locais em um só lugar!
-            </p>
+            </GreetingText>
           </div>
-        </div>
-        <Row gutter={[16, 16]} style={{ width: "100%", marginBottom: "16px" }}>
+        </HeaderContainer>
+        <StyledRow gutter={[16, 16]}>
           <Col xs={24} md={12}>
-            <Card
-              style={{
-                backgroundColor: "#2F3B28",
-                color: "white",
-                borderWidth: 0,
-                borderRadius: "16px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
-                }}
-              >
-                <div >
-                  <div style={{ display: "flex", alignItems: "center" }}>
+            <LocalCard>
+              <CardContent>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     <HomeOutlined style={{ fontSize: 28, marginRight: 10 }} />
-                    <h1 style={{ fontSize: 28, color: "white", margin: 0 }}>
-                      Locais
-                    </h1>
+                    <CardTitle>Locais</CardTitle>
                   </div>
-                  <div>
-                    <p style={{ margin: 0 }}>
-                      Confira todos os locais cadastrados!
-                    </p>
-                  </div>
+                  <CardDescription>
+                    Confira todos os locais cadastrados!
+                  </CardDescription>
                 </div>
-                <div>
-                  <Button
-                    type="primary"
-                    onClick={handleNavigateLocais}
-                    style={{
-                      backgroundColor: "#CAD6EC",
-                      color: "black",
-                      borderWidth: 0,
-                    }}
-                  >
-                    Conferir locais
-                  </Button>
-                </div>
-              </div>
-            </Card>
+                <CardButton onClick={handleNavigateLocais}>
+                  Conferir locais
+                </CardButton>
+              </CardContent>
+            </LocalCard>
           </Col>
           <Col xs={24} md={12}>
-            <Card
-              style={{
-                backgroundColor: "#461527",
-                color: "white",
-                borderWidth: 0,
-                borderRadius: "16px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
-                }}
-              >
-                <div >
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <CalendarFilled style={{ fontSize: 28, marginRight: 10 }} />
-                    <h2 style={{ fontSize: 28, color: "white", margin: 0 }}>
-                      Eventos
-                    </h2>
-                  </div>
-                  <div>
-                    <p style={{ margin: 0 }}>
-                      Confira todos os eventos cadastrados!
-                    </p>
-                  </div>
-                </div>
+            <EventCard>
+              <CardContent>
                 <div>
-                  <Button
-                    type="primary"
-                    onClick={handleNavigateEventos}
-                    style={{
-                      backgroundColor: "#CAD6EC",
-                      color: "black",
-                      borderWidth: 0,
-                    }}
-                  >
-                    Conferir eventos
-                  </Button>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <CalendarFilled style={{ fontSize: 28, marginRight: 10 }} />
+                    <CardTitle>Eventos</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Confira todos os eventos cadastrados!
+                  </CardDescription>
                 </div>
-              </div>
-            </Card>
+                <CardButton onClick={handleNavigateEventos}>
+                  Conferir eventos
+                </CardButton>
+              </CardContent>
+            </EventCard>
           </Col>
-        </Row>
-        <Row gutter={[16, 16]} style={{ width: "100%" }}>
+        </StyledRow>
+        <Row gutter={[16, 16]} style={{ width: '100%' }}>
           <Col xs={24} md={12}>
             <Card
               title="Últimos locais adicionados"
@@ -321,13 +236,11 @@ const Home = () => {
                   Ver todos
                 </a>
               }
-              
             >
               <Table
                 columns={locaisColumns}
                 dataSource={locaisData}
                 pagination={false}
-
               />
             </Card>
           </Col>
@@ -342,16 +255,14 @@ const Home = () => {
             >
               <Table
                 columns={eventosColumns}
-                dataSource={eventosData}
+                dataSource={eventsData}
                 pagination={false}
-
-
               />
             </Card>
           </Col>
         </Row>
-      </Content>
-    </Layout>
+      </StyledContent>
+    </StyledLayout>
   );
 };
 
