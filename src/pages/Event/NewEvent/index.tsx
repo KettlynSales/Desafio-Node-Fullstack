@@ -36,12 +36,7 @@ import {
 import { useEventStore } from '../../../store/event';
 import { useLocalStore } from '../../../store/local';
 
-import {
-  formatDate,
-  formatTime,
-  formatPhone,
-  validateFutureDate,
-} from '../../../utils/utils';
+import { formatDate, formatTime, formatPhone } from '../../../utils/utils';
 
 const { Option } = Select;
 
@@ -161,7 +156,6 @@ const NewEvent = () => {
                       rules={[
                         {
                           required: true,
-                          validator: validateFutureDate,
                         },
                       ]}
                       getValueFromEvent={(e) => formatDate(e.target.value)}

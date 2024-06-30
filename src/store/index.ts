@@ -1,4 +1,4 @@
-import localStore from "./local";
-import eventStore from "./event";
+import { useLocalStore } from './local';
+import { useEventStore } from './event';
 
-export { localStore, eventStore };
+export { useLocalStore, useEventStore };

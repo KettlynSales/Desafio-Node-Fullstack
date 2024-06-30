@@ -87,19 +87,3 @@ export const formatTime = (value: string) => {
     .replace(/^(\d{0,2})(\d{0,2})(\d{0,2})/, '$1:$2')
     .slice(0, 5);
 };
-
-export const validateFutureDate = (rule: any, value: string, callback: any) => {
-  if (!value) {
-    callback('Informe a data do evento');
-    return;
-  }
-
-  const selectedDate = new Date(value);
-  const currentDate = new Date();
-
-  if (selectedDate <= currentDate) {
-    callback('A data do evento deve ser maior que a data atual');
-  } else {
-    callback();
-  }
-};
