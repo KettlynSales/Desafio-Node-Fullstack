@@ -40,7 +40,7 @@ const { Option } = Select;
 const NewLocal = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { setLocalEdit } = useLocalStore();
+  const { setLocalEdit, setGates, setTicketGates } = useLocalStore();
 
   const [form] = Form.useForm();
 
@@ -51,6 +51,8 @@ const NewLocal = () => {
           const response = await getLocalById(id);
           form.setFieldsValue(response);
           setLocalEdit(response);
+          setGates(response.gates);
+          setTicketGates(response.tickets);
         }
       } catch (error) {
         console.error('Erro ao buscar local:', error);
@@ -263,10 +265,7 @@ const NewLocal = () => {
                 </Row>
                 <Divider />
                 <Form.Item style={{ textAlign: 'right' }}>
-                  <FormButton
-                    htmlType="button"
-                    onClick={() => form.resetFields()}
-                  >
+                  <FormButton htmlType="button" onClick={() => navigate(-1)}>
                     Cancelar
                   </FormButton>
                   <SubmitButton type="primary" htmlType="submit">

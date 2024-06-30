@@ -93,7 +93,7 @@ const Events = () => {
     },
     {
       title: 'Local associado',
-      dataIndex: 'localId',
+      dataIndex: ['local', 'name'],
       key: 'localId',
     },
     {

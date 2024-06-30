@@ -1,8 +1,23 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Table, Tag, Row, Col, Menu, Dropdown, Card, Button } from 'antd';
-import { MoreOutlined, HomeOutlined, CalendarFilled } from '@ant-design/icons';
+import {
+  Table,
+  Tag,
+  Row,
+  Col,
+  Menu,
+  Dropdown,
+  Card,
+  Button,
+  Modal,
+} from 'antd';
+import {
+  MoreOutlined,
+  HomeOutlined,
+  CalendarFilled,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import {
   StyledLayout,
   BackgroundOverlay,
@@ -25,11 +40,13 @@ import BackgroundImage from '../../assets/background.jpg';
 import { Gate, Local } from '../Local/types/local';
 import { Event } from '../Event/types/event';
 
-import { getLocais } from '../../services/local';
-import { getEvents } from '../../services/event';
+import { deleteLocal, getLocais } from '../../services/local';
+import { deleteEvent, getEvents } from '../../services/event';
 
 import { useEventStore } from '../../store/event';
 import { useLocalStore } from '../../store/local';
+
+const { confirm } = Modal;
 
 const Home = () => {
   const navigate = useNavigate();
@@ -128,7 +145,7 @@ const Home = () => {
     },
     {
       title: 'Local',
-      dataIndex: 'localId',
+      dataIndex: ['local', 'name'],
       key: 'localId',
     },
     {
@@ -151,11 +168,45 @@ const Home = () => {
     },
   ];
 
+  const showDeleteConfirm = (id: string) => {
+    confirm({
+      title: 'Tem certeza que deseja apagar este local?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Esta ação não pode ser desfeita.',
+      okText: 'Sim',
+      okType: 'danger',
+      cancelText: 'Cancelar',
+      onOk() {
+        handleDelete(id);
+      },
+      onCancel() {
+        console.log('Cancelado');
+      },
+    });
+  };
+
+  const showDeleteConfirmEvent = (id: string) => {
+    confirm({
+      title: 'Tem certeza que deseja apagar este local?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Esta ação não pode ser desfeita.',
+      okText: 'Sim',
+      okType: 'danger',
+      cancelText: 'Cancelar',
+      onOk() {
+        handleDeleteEvent(id);
+      },
+      onCancel() {
+        console.log('Cancelado');
+      },
+    });
+  };
+
   const handleMenuClick = (key: string, record: Local) => {
     if (key === '1') {
       navigate(`/newLocal/${record.id}`);
     } else if (key === '2') {
-      console.log('Apagar registro:', record.id);
+      showDeleteConfirm(record.id);
     }
   };
 
@@ -163,7 +214,7 @@ const Home = () => {
     if (key === '1') {
       navigate(`/newEvent/${record.id}`);
     } else if (key === '2') {
-      console.log('Apagar registro:', record.id);
+      showDeleteConfirmEvent(record.id);
     }
   };
 
@@ -173,6 +224,25 @@ const Home = () => {
 
   const handleNavigateEventos = () => {
     navigate('/events');
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteLocal(id);
+      const updatedLocais = locaisData.filter((local) => local.id !== id);
+      setLocaisData(updatedLocais);
+    } catch (error) {
+      console.error('Erro ao deletar local:', error);
+    }
+  };
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      await deleteEvent(id);
+      const updatedEvents = eventsData.filter((event) => event.id !== id);
+      setEventsData(updatedEvents);
+    } catch (error) {
+      console.error('Erro ao deletar evento:', error);
+    }
   };
 
   return (
